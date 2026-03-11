@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sales Velocity Report — Ignacio Sánchez — 2026-03-11</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+    --brand-primary: #0F172A;
+    --brand-accent: #2563EB;
+    --brand-accent-deep: #1D4ED8;
+    --brand-accent-light: #60A5FA;
+    --brand-gold: #F59E0B;
+    --brand-gradient: linear-gradient(135deg, #2563EB, #1D4ED8);
+    --bg-dark: #0a0e1a;
+    --bg-card: #111827;
+    --bg-card-alt: #1E293B;
+    --text-primary: #F1F5F9;
+    --text-secondary: #94A3B8;
+    --text-muted: #64748B;
+    --green: #10B981;
+    --red: #EF4444;
+    --yellow: #F59E0B;
+    --orange: #F97316;
+    --border: rgba(148,163,184,0.12);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',sans-serif; background:var(--bg-dark); color:var(--text-primary); line-height:1.6; }
+.container { max-width:1200px; margin:0 auto; padding:24px; }
+
+/* Header */
+.report-header { background:linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%); border:1px solid var(--border); border-radius:16px; padding:48px; margin-bottom:32px; position:relative; overflow:hidden; }
+.report-header::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background:var(--brand-gradient); }
+.report-header .badge { display:inline-block; background:rgba(37,99,235,0.15); color:var(--brand-accent-light); padding:4px 16px; border-radius:20px; font-size:12px; font-weight:600; letter-spacing:1px; text-transform:uppercase; margin-bottom:16px; border:1px solid rgba(37,99,235,0.3); }
+.report-header h1 { font-size:36px; font-weight:800; letter-spacing:-0.5px; margin-bottom:8px; }
+.report-header h1 span { background:var(--brand-gradient); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.report-header .subtitle { color:var(--text-secondary); font-size:15px; }
+.report-header .meta { display:flex; gap:24px; margin-top:20px; flex-wrap:wrap; }
+.report-header .meta-item { color:var(--text-muted); font-size:13px; }
+.report-header .meta-item strong { color:var(--text-secondary); }
+
+/* Section */
+.section { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:32px; margin-bottom:24px; }
+.section-number { display:inline-block; background:var(--brand-gradient); color:white; width:28px; height:28px; border-radius:8px; text-align:center; line-height:28px; font-size:13px; font-weight:700; margin-right:10px; }
+.section h2 { font-size:22px; font-weight:700; margin-bottom:20px; display:flex; align-items:center; }
+.section h3 { font-size:16px; font-weight:600; margin:20px 0 12px; color:var(--brand-accent-light); }
+
+/* Traffic Light */
+.verdict { display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap; }
+.traffic-light { width:80px; display:flex; flex-direction:column; align-items:center; gap:8px; padding:16px; background:#1a1f2e; border-radius:12px; flex-shrink:0; }
+.traffic-dot { width:24px; height:24px; border-radius:50%; opacity:0.2; }
+.traffic-dot.active { opacity:1; box-shadow:0 0 20px currentColor; }
+.traffic-dot.green { background:var(--green); color:var(--green); }
+.traffic-dot.yellow { background:var(--yellow); color:var(--yellow); }
+.traffic-dot.red { background:var(--red); color:var(--red); }
+.verdict-text { flex:1; font-size:15px; line-height:1.7; }
+.verdict-text .highlight { color:var(--brand-accent-light); font-weight:600; }
+
+/* KPI Cards */
+.kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; }
+.kpi-card { background:var(--bg-card-alt); border:1px solid var(--border); border-radius:12px; padding:20px; }
+.kpi-card .label { font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
+.kpi-card .value { font-size:28px; font-weight:800; margin-bottom:4px; }
+.kpi-card .benchmark { font-size:12px; color:var(--text-muted); }
+.kpi-card .baseline-tag { display:inline-block; background:rgba(245,158,11,0.15); color:var(--yellow); padding:2px 10px; border-radius:10px; font-size:11px; font-weight:600; }
+.kpi-card.highlight-green { border-left:3px solid var(--green); }
+.kpi-card.highlight-red { border-left:3px solid var(--red); }
+.kpi-card.highlight-yellow { border-left:3px solid var(--yellow); }
+.kpi-card.highlight-blue { border-left:3px solid var(--brand-accent); }
+
+/* Alert */
+.alert { padding:16px 20px; border-radius:12px; margin:16px 0; font-size:14px; display:flex; align-items:flex-start; gap:12px; }
+.alert-red { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); color:#fca5a5; }
+.alert-yellow { background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.2); color:#fcd34d; }
+.alert-green { background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.2); color:#6ee7b7; }
+.alert-blue { background:rgba(37,99,235,0.1); border:1px solid rgba(37,99,235,0.2); color:var(--brand-accent-light); }
+
+/* Funnel */
+.funnel { margin:20px 0; }
+.funnel-bar { display:flex; align-items:center; margin-bottom:6px; }
+.funnel-label { width:260px; font-size:13px; color:var(--text-secondary); text-align:right; padding-right:16px; flex-shrink:0; }
+.funnel-fill { height:32px; border-radius:6px; display:flex; align-items:center; padding:0 12px; font-size:12px; font-weight:700; color:white; min-width:40px; transition:width 0.5s ease; }
+.funnel-count { margin-left:8px; font-size:12px; color:var(--text-muted); }
+
+/* Table */
+table { width:100%; border-collapse:separate; border-spacing:0; }
+th { background:var(--bg-card-alt); color:var(--text-muted); font-size:12px; text-transform:uppercase; letter-spacing:0.5px; padding:12px 16px; text-align:left; border-bottom:1px solid var(--border); }
+td { padding:10px 16px; font-size:14px; border-bottom:1px solid var(--border); }
+tr:hover td { background:rgba(37,99,235,0.03); }
+.status-dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:6px; }
+
+/* Actions */
+.action-card { background:var(--bg-card-alt); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:16px; position:relative; }
+.action-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; border-radius:4px 0 0 4px; }
+.action-card.p1::before { background:var(--red); }
+.action-card.p2::before { background:var(--orange); }
+.action-card.p3::before { background:var(--brand-accent); }
+.action-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; flex-wrap:wrap; gap:8px; }
+.action-title { font-size:16px; font-weight:700; }
+.action-priority { display:inline-block; padding:3px 10px; border-radius:6px; font-size:11px; font-weight:700; text-transform:uppercase; }
+.action-priority.p1 { background:rgba(239,68,68,0.15); color:#fca5a5; }
+.action-priority.p2 { background:rgba(249,115,22,0.15); color:#fdba74; }
+.action-priority.p3 { background:rgba(37,99,235,0.15); color:var(--brand-accent-light); }
+.action-meta { display:flex; gap:20px; flex-wrap:wrap; margin-bottom:12px; }
+.action-meta span { font-size:12px; color:var(--text-muted); }
+.action-meta span strong { color:var(--text-secondary); }
+.action-steps { padding-left:0; list-style:none; counter-reset:steps; }
+.action-steps li { counter-increment:steps; padding:6px 0 6px 32px; font-size:14px; color:var(--text-secondary); position:relative; }
+.action-steps li::before { content:counter(steps); position:absolute; left:0; width:22px; height:22px; border-radius:6px; background:rgba(37,99,235,0.1); color:var(--brand-accent-light); font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+
+/* Footer */
+.report-footer { text-align:center; padding:32px; color:var(--text-muted); font-size:13px; }
+.report-footer .logo { font-size:18px; font-weight:700; margin-bottom:8px; }
+.report-footer .logo span { background:var(--brand-gradient); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+
+/* Responsive */
+@media(max-width:768px) {
+    .container { padding:12px; }
+    .report-header { padding:24px; }
+    .report-header h1 { font-size:24px; }
+    .kpi-grid { grid-template-columns:1fr 1fr; }
+    .funnel-label { width:140px; font-size:11px; }
+    .action-meta { flex-direction:column; gap:4px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- HEADER -->
+<div class="report-header">
+    <div class="badge">📊 Sales Velocity Report #1 — BASELINE</div>
+    <h1>SALES VELOCITY <span>REPORT</span></h1>
+    <h1 style="font-size:20px;font-weight:400;color:var(--text-secondary);margin-top:-4px">Ignacio Sánchez — FIN LAB Consulting</h1>
+    <div class="meta">
+        <div class="meta-item">📅 <strong>2026-03-11</strong></div>
+        <div class="meta-item">🏢 <strong>Sales Velocity x FIN LAB</strong></div>
+        <div class="meta-item">🔖 <strong>Tipo: Análisis Estratégico + Pipeline</strong></div>
+    </div>
+</div>
+
+<!-- 01 VEREDICTO -->
+<div class="section">
+    <h2><span class="section-number">01</span>Veredicto Ejecutivo</h2>
+    <div class="verdict">
+        <div class="traffic-light">
+            <div class="traffic-dot red"></div>
+            <div class="traffic-dot yellow active"></div>
+            <div class="traffic-dot green"></div>
+        </div>
+        <div class="verdict-text">
+            <strong style="font-size:18px;color:var(--yellow)">⚠️ AMARILLO — Potencial Enorme, Ejecución Trabada</strong>
+            <p style="margin-top:12px">Ignacio tiene <span class="highlight">2,665 leads en pipeline</span> y <span class="highlight">8,215 contactos totales</span> — un activo MASIVO que la mayoría de negocios a este ticket ($2-3K) matarían por tener. Sin embargo, el <span class="highlight">32% de los leads (852)</span> están completamente fríos (sin respuesta o no atendieron). Solo <span class="highlight">26 están agendados para Closer</span> (0.97% del total). Esto indica un problema de <strong>velocidad de contactación y seguimiento</strong>, no de generación de leads.</p>
+            <p style="margin-top:8px"><strong>El problema NO es que faltan leads. El problema es que los leads existentes no están siendo procesados.</strong></p>
+            <p style="margin-top:8px">Adicionalmente: <span style="color:var(--red);font-weight:600">Meta Ads está APAGADO</span> — ambas cuentas publicitarias no tienen acceso API otorgado, lo que impide cualquier análisis de campañas previas o lanzamiento de nuevas.</p>
+        </div>
+    </div>
+</div>
+
+<!-- 02 KPIs CONSOLIDADOS -->
+<div class="section">
+    <h2><span class="section-number">02</span>KPIs Consolidados</h2>
+    <div class="kpi-grid">
+        <div class="kpi-card highlight-blue">
+            <div class="label">Total Contactos GHL</div>
+            <div class="value" style="color:var(--brand-accent-light)">8,215</div>
+            <div class="baseline-tag">BASELINE</div>
+        </div>
+        <div class="kpi-card highlight-yellow">
+            <div class="label">Leads en Pipeline (Agendas SIAV)</div>
+            <div class="value" style="color:var(--yellow)">2,665</div>
+            <div class="benchmark">18 stages activos</div>
+        </div>
+        <div class="kpi-card highlight-red">
+            <div class="label">Leads Fríos / Sin Respuesta</div>
+            <div class="value" style="color:var(--red)">852</div>
+            <div class="benchmark">32% del total — URGENTE reactivar</div>
+        </div>
+        <div class="kpi-card highlight-green">
+            <div class="label">Agendados para Closer</div>
+            <div class="value" style="color:var(--green)">26</div>
+            <div class="benchmark">18 primera + 8 segunda llamada</div>
+        </div>
+        <div class="kpi-card highlight-blue">
+            <div class="label">En Seguimiento Activo</div>
+            <div class="value" style="color:var(--brand-accent-light)">1,635</div>
+            <div class="benchmark">61.3% del pipeline</div>
+        </div>
+        <div class="kpi-card highlight-yellow">
+            <div class="label">No Cualificados</div>
+            <div class="value" style="color:var(--yellow)">70</div>
+            <div class="benchmark">Solo 2.6% — calidad de lead aceptable</div>
+        </div>
+        <div class="kpi-card highlight-green">
+            <div class="label">CPL Histórico (USA)</div>
+            <div class="value" style="color:var(--green)">$12.00</div>
+            <div class="benchmark">Benchmark sector: $27.66 ✅ Muy por debajo</div>
+        </div>
+        <div class="kpi-card highlight-green">
+            <div class="label">CPL Histórico (LATAM)</div>
+            <div class="value" style="color:var(--green)">$0.30</div>
+            <div class="benchmark">Extremadamente bajo</div>
+        </div>
+        <div class="kpi-card highlight-yellow">
+            <div class="label">Presupuesto Ads Disponible</div>
+            <div class="value" style="color:var(--yellow)">$1,500</div>
+            <div class="benchmark">/mes — limitado para 2 GEOs</div>
+        </div>
+        <div class="kpi-card highlight-blue">
+            <div class="label">Ticket Promedio</div>
+            <div class="value" style="color:var(--brand-accent-light)">$2,500</div>
+            <div class="benchmark">Rango: $2,000 - $3,000</div>
+        </div>
+        <div class="kpi-card highlight-yellow">
+            <div class="label">Facturación Mensual</div>
+            <div class="value" style="color:var(--yellow)">$15K</div>
+            <div class="benchmark">~5-7 clientes/mes</div>
+        </div>
+        <div class="kpi-card highlight-red">
+            <div class="label">Meta Ads Status</div>
+            <div class="value" style="color:var(--red);font-size:18px">🚫 SIN ACCESO</div>
+            <div class="benchmark">Ambas cuentas sin ads_read</div>
+        </div>
+    </div>
+</div>
+
+<!-- 03 ANÁLISIS DE PIPELINE -->
+<div class="section">
+    <h2><span class="section-number">03</span>Análisis de Pipeline GHL</h2>
+    
+    <h3>Pipeline: Agendas SIAV (2,665 leads)</h3>
+    <div class="funnel">
+        <div class="funnel-bar">
+            <div class="funnel-label">En seguimiento (1-5 días)</div>
+            <div class="funnel-fill" style="width:100.0%;background:#2563EB">793</div>
+        </div>
+        <div class="funnel-bar">
+            <div class="funnel-label">Sin respuesta (lead frío)</div>
+            <div class="funnel-fill" style="width:78.43631778058008%;background:#EF4444">622</div>
+        </div>
+        <div class="funnel-bar">
+            <div class="funnel-label">En seguimiento (15d-1 mes)</div>
+            <div class="funnel-fill" style="width:62.6733921815889%;background:#3B82F6">497</div>
+        </div>
+        <div class="funnel-bar">
+            <div class="funnel-label">Se contactó y no atendió</div>
+            <div class="funnel-fill" style="width:29.00378310214376%;background:#F97316">230</div>
+        </div>
+        <div class="funnel-bar">
+            <div class="funnel-label">En seguimiento (5-10 días)</div>
+            <div class="funnel-fill" style="width:23.203026481715007%;background:#60A5FA">184</div>
+        </div>
+        <div class="funnel-bar">
+            <div class="funnel-label">En seguimiento (10-15 días)</div>
+            <div class="funnel-fill" style="width:18.915510718789406%;background:#818CF8">150</div>
+        </div>
+        <div class="funnel-bar">
+            <div class="funnel-label">No cualificados</div>
+            <div class="funnel-fill" style="width:8.827238335435057%;background:#6B7280">70</div>
+        </div>
+        <div class="funnel-bar">
+            <div class="funnel-label">Asignados Gabriel</div>
+            <div class="funnel-fill" style="width:5%;background:#10B981">24</div>
+        </div>
+        <div class="funnel-bar">
+            <div class="funnel-label">Asignados a Gaby</div>
+            <div class="funnel-fill" style="width:5%;background:#10B981">19</div>
+        </div>
+        <div class="funnel-bar">
+            <div class="funnel-label">Agendado Closer</div>
+            <div class="funnel-fill" style="width:5%;background:#F59E0B">18</div>
+        </div>
+        <div class="funnel-bar">
+            <div class="funnel-label">Repesca</div>
+            <div class="funnel-fill" style="width:5%;background:#8B5CF6">17</div>
+        </div>
+        <div class="funnel-bar">
+            <div class="funnel-label">En seguimiento >1 mes</div>
+            <div class="funnel-fill" style="width:5%;background:#6B7280">11</div>
+        </div>
+        <div class="funnel-bar">
+            <div class="funnel-label">Por contactar</div>
+            <div class="funnel-fill" style="width:5%;background:#06B6D4">8</div>
+        </div>
+        <div class="funnel-bar">
+            <div class="funnel-label">Agendado Closer 2ª</div>
+            <div class="funnel-fill" style="width:5%;background:#F59E0B">8</div>
+        </div>
+        <div class="funnel-bar">
+            <div class="funnel-label">Asignados a Gladys</div>
+            <div class="funnel-fill" style="width:5%;background:#10B981">5</div>
+        </div>
+        <div class="funnel-bar">
+            <div class="funnel-label">En Triaje</div>
+            <div class="funnel-fill" style="width:5%;background:#9CA3AF">4</div>
+        </div>
+        <div class="funnel-bar">
+            <div class="funnel-label">Nunca Respondió</div>
+            <div class="funnel-fill" style="width:5%;background:#9CA3AF">3</div>
+        </div>
+        <div class="funnel-bar">
+            <div class="funnel-label">Lost</div>
+            <div class="funnel-fill" style="width:5%;background:#EF4444">2</div>
+        </div>
+    </div>
+
+    <div class="alert alert-red">
+        <span>🚨</span>
+        <div><strong>DATO CRÍTICO:</strong> 852 leads (32%) están completamente fríos — "Sin respuesta" (622) + "Se contactó y no atendió" (230). Estos leads ya costaron dinero adquirirlos. Reactivarlos no cuesta nada en ads y puede generar cierres inmediatos.</div>
+    </div>
+
+    <div class="alert alert-green">
+        <span>✅</span>
+        <div><strong>SEÑAL POSITIVA:</strong> Solo 2.6% fueron clasificados como "No cualificados" y solo 2 como "Lost". Esto demuestra que la calidad del lead que llega ES BUENA — el cuello de botella está en la velocidad de contactación.</div>
+    </div>
+
+    <h3>Pipeline: SIAV — Leads Calificados (234 total)</h3>
+    <table>
+        <thead><tr><th>Etapa</th><th>Cantidad</th><th>% del Total</th><th>Observación</th></tr></thead>
+        <tbody>
+            <tr><td><span class="status-dot" style="background:var(--green)"></span>Venezuela SIAV</td><td><strong>17</strong></td><td>7.3%</td><td>Mercado primario actual</td></tr>
+            <tr><td><span class="status-dot" style="background:var(--brand-accent)"></span>USA SIAV</td><td><strong>5</strong></td><td>2.1%</td><td>Llegaron orgánico — alto valor</td></tr>
+            <tr><td><span class="status-dot" style="background:var(--yellow)"></span>Por contactar</td><td><strong>76</strong></td><td>32.5%</td><td>🚨 URGENTE — leads maduros sin contactar</td></tr>
+            <tr><td><span class="status-dot" style="background:var(--text-muted)"></span>Referidos</td><td>1</td><td>0.4%</td><td>Canal infrautilizado</td></tr>
+            <tr><td><span class="status-dot" style="background:var(--text-muted)"></span>Base</td><td>1</td><td>0.4%</td><td>—</td></tr>
+        </tbody>
+    </table>
+
+    <div class="alert alert-yellow" style="margin-top:16px">
+        <span>⚠️</span>
+        <div><strong>76 leads "Por contactar" en pipeline SIAV</strong> — estos ya pasaron calificación y están esperando que alguien los contacte. Cada day que pasa sin contactarlos, baja su tasa de conversión un ~10%. Esto debería ser prioridad absoluta antes de gastar un centavo en Meta Ads.</div>
+    </div>
+
+    <h3>Pipeline: STAV (Trading)</h3>
+    <div class="alert alert-blue">
+        <span>ℹ️</span>
+        <div>El pipeline STAV tiene <strong>0 oportunidades</strong>. Esto es consistente con el enfoque hacia SIAV (inversión) como producto principal. Recomendación: no desperdiciar presupuesto en STAV hasta que SIAV esté optimizado.</div>
+    </div>
+</div>
+
+<!-- 04 ANÁLISIS BSL -->
+<div class="section">
+    <h2><span class="section-number">04</span>Análisis del BSL Actual</h2>
+    
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+        <div class="kpi-card">
+            <div class="label">URL del BSL</div>
+            <div style="font-size:13px;color:var(--brand-accent-light);word-break:break-all"><a href="https://go.finlabconsulting.com/inversion" style="color:var(--brand-accent-light)">go.finlabconsulting.com/inversion</a></div>
+        </div>
+        <div class="kpi-card">
+            <div class="label">CTA Principal</div>
+            <div style="font-size:15px;font-weight:600">Agenda tu Sesión Estratégica sin Costo</div>
+        </div>
+    </div>
+
+    <div class="alert alert-red">
+        <span>🚨</span>
+        <div><strong>DISCREPANCIA CRÍTICA EN LA PROMESA:</strong> El BSL actual promete "rendimientos superiores al <strong>65% anual</strong>", pero la oferta documentada y el contrato garantizan <strong>25-45% anual</strong>. Esta inconsistencia puede generar problemas legales (especialmente en USA con la SEC) y destruye la confianza del lead cuando descubre que la promesa real es diferente.</div>
+    </div>
+
+    <h3>Elementos Actuales del BSL</h3>
+    <table>
+        <thead><tr><th>Elemento</th><th>Estado</th><th>Observación</th></tr></thead>
+        <tbody>
+            <tr><td>Video VSL</td><td>✅ Presente</td><td>Video embebido con autoplay</td></tr>
+            <tr><td>Headline</td><td>⚠️ Agresivo</td><td>"rendimientos superiores al 65%" — sobre-promesa</td></tr>
+            <tr><td>Calendario de agenda</td><td>✅ Integrado</td><td>30 min sesión, zona horaria auto-detect</td></tr>
+            <tr><td>Prueba social</td><td>✅ Mencionada</td><td>"Más de 1,500 personas han invertido"</td></tr>
+            <tr><td>Criterios de calificación</td><td>✅ Presentes</td><td>4 checkboxes (capital, edad, estrategia, acompañamiento)</td></tr>
+            <tr><td>SEO / Indexación</td><td>⚠️ Bloqueado</td><td>robots: noindex — correcto para landing de ads</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- 05 ANÁLISIS ESTRATÉGICO: ¿USA O LATAM? -->
+<div class="section">
+    <h2><span class="section-number">05</span>Análisis Estratégico: ¿USA o LATAM?</h2>
+    
+    <p style="color:var(--text-secondary);margin-bottom:20px">Con $1,500/mes de presupuesto, la distribución geográfica es LA decisión más importante. Aquí está el análisis con datos reales:</p>
+    
+    <table>
+        <thead><tr><th>Métrica</th><th>🇺🇸 USA</th><th>🇻🇪🇨🇴 LATAM</th><th>Veredicto</th></tr></thead>
+        <tbody>
+            <tr><td><strong>CPL Histórico</strong></td><td>$12.00</td><td>$0.30</td><td style="color:var(--green)">LATAM mucho más barato</td></tr>
+            <tr><td><strong>CPL Benchmark Sector</strong></td><td>$27.66</td><td>~$1.00</td><td style="color:var(--green)">Ignacio rinde 2.3x mejor que benchmark USA</td></tr>
+            <tr><td><strong>Leads/mes con $1,500</strong></td><td>~125</td><td>~5,000</td><td>LATAM da volumen masivo</td></tr>
+            <tr><td><strong>Capacidad de cierre</strong></td><td>5-6 cierres si 4-5%</td><td>¿Quién contacta 5,000?</td><td style="color:var(--red)">⚠️ Imposible procesar</td></tr>
+            <tr><td><strong>Ticket promedio</strong></td><td>$2,500-$3,000</td><td>$2,000</td><td>USA ticket más alto</td></tr>
+            <tr><td><strong>Revenue potencial/mes</strong></td><td>$12,500-$18,000</td><td>Difícil de estimar</td><td style="color:var(--green)"><strong>USA gana en ROI</strong></td></tr>
+            <tr><td><strong>ROAS esperado</strong></td><td>8x-12x</td><td>Alto pero difuso</td><td style="color:var(--green)">USA claramente superior</td></tr>
+            <tr><td><strong>Riesgo regulatorio</strong></td><td>Alto (SEC, FTC)</td><td>Bajo</td><td style="color:var(--yellow)">Copy cuidadoso para USA</td></tr>
+        </tbody>
+    </table>
+
+    <div class="alert alert-green" style="margin-top:20px">
+        <span>💡</span>
+        <div><strong>RECOMENDACIÓN NOTEBOOKLM:</strong> Apuntar a <strong>USA</strong>. El CPL de $12 en USA es excelente — está <strong>56% por debajo del benchmark del sector ($27.66)</strong>. Con $1,500/mes se estiman 125 leads → 5-6 cierres → $12,500-$18,000 en revenue. ROAS de 8x-12x. LATAM genera volumen pero sin capacidad operativa de contactar 5,000 leads/mes, ese volumen no sirve.</div>
+    </div>
+
+    <h3>Distribución Recomendada del Presupuesto ($1,500/mes)</h3>
+    <div class="kpi-grid" style="margin-top:12px">
+        <div class="kpi-card highlight-blue">
+            <div class="label">Campaña USA (Tráfico Frío + Warm)</div>
+            <div class="value" style="color:var(--brand-accent-light)">$1,200</div>
+            <div class="benchmark">80% → ~100 leads USA ($12 CPL)</div>
+        </div>
+        <div class="kpi-card highlight-green">
+            <div class="label">Retargeting / Custom Audiences</div>
+            <div class="value" style="color:var(--green)">$300</div>
+            <div class="benchmark">20% → reactivar los 852 leads fríos</div>
+        </div>
+    </div>
+</div>
+
+<!-- 06 ESTRUCTURA DE CAMPAÑA RECOMENDADA -->
+<div class="section">
+    <h2><span class="section-number">06</span>Estructura de Campaña Meta Ads Recomendada</h2>
+
+    <div class="alert alert-blue">
+        <span>🧠</span>
+        <div>Con presupuesto de $50/día, la simplificación es OBLIGATORIA para que Andromeda (el algoritmo de Meta 2026) funcione. No fragmentar en múltiples campañas — concentrar todo en 1 campaña CBO.</div>
+    </div>
+
+    <h3>Campaña 1: Advantage+ Sales — USA (CBO $40/día)</h3>
+    <table>
+        <thead><tr><th>Componente</th><th>Configuración</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Objetivo</strong></td><td>Leads / Conversiones (Complete Registration)</td></tr>
+            <tr><td><strong>Tipo</strong></td><td>Advantage+ Sales (CBO)</td></tr>
+            <tr><td><strong>Presupuesto</strong></td><td>$40/día (~$1,200/mes)</td></tr>
+            <tr><td><strong>Segmentación</strong></td><td>Radicalmente amplia: USA, 30-65 años, SIN intereses. Dejar que el algoritmo aprenda del contenido del anuncio.</td></tr>
+            <tr><td><strong>Audience Hint</strong></td><td>Subir lista de clientes actuales (55) + leads convertidos como señal inicial</td></tr>
+            <tr><td><strong>Ad Sets</strong></td><td>1-2 máximo (no fragmentar aprendizaje)</td></tr>
+            <tr><td><strong>Creativos</strong></td><td>3-5 anuncios activos: 1) Video UGC testimonio, 2) Estático texto-pesado con caso de éxito numérico, 3) Carrusel de testimonios, 4) Reel corto con hook financiero, 5) Story ad CTA directo</td></tr>
+            <tr><td><strong>Placements</strong></td><td>Advantage+ Placements (priorizar Reels + Stories — CPC 45% más barato)</td></tr>
+            <tr><td><strong>Landing</strong></td><td>BSL actual CORREGIDO (bajar de 65% a 25-45%)</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Campaña 2: Retargeting Custom Audiences ($10/día)</h3>
+    <table>
+        <thead><tr><th>Componente</th><th>Configuración</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Objetivo</strong></td><td>Leads / Conversiones</td></tr>
+            <tr><td><strong>Presupuesto</strong></td><td>$10/día (~$300/mes)</td></tr>
+            <tr><td><strong>Audiencia</strong></td><td>Custom Audience: Subir CSV de los 852 leads fríos + 1,635 en seguimiento</td></tr>
+            <tr><td><strong>Creativos</strong></td><td>Testimonios en video (prueba social), Caso de éxito con números concretos, "¿Recuerdas que te registraste?" (re-engagement)</td></tr>
+            <tr><td><strong>Copy</strong></td><td>Framework PAS: Problema → Agitación → Solución</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- 07 ACCIONES PRIORITARIAS -->
+<div class="section">
+    <h2><span class="section-number">07</span>Acciones Prioritarias</h2>
+
+    <!-- P1: Meta Ads Access -->
+    <div class="action-card p1">
+        <div class="action-header">
+            <div class="action-title">🔓 Obtener acceso a las cuentas de Meta Ads</div>
+            <span class="action-priority p1">P1 URGENTE</span>
+        </div>
+        <div class="action-meta">
+            <span>👤 <strong>Responsable:</strong> LuchoBranding + Ignacio</span>
+            <span>📅 <strong>Deadline:</strong> 14 marzo 2026</span>
+            <span>⏱ <strong>Esfuerzo:</strong> 15 min</span>
+            <span>📈 <strong>Impacto:</strong> Sin esto, nada de ads funciona</span>
+        </div>
+        <ol class="action-steps">
+            <li>Ignacio debe ir a Facebook Business Manager → Configuración → Rol de usuario</li>
+            <li>Otorgar "ads_read" y "ads_management" al App "Sales Velocity" (ID: 680577718449490)</li>
+            <li>Hacer esto en AMBAS cuentas: act_512423184684678 y act_1121013052450336</li>
+            <li>Confirmar con LuchoBranding para verificar acceso</li>
+        </ol>
+    </div>
+
+    <!-- P1: Contactar los 76 leads SIAV -->
+    <div class="action-card p1">
+        <div class="action-header">
+            <div class="action-title">📞 Contactar los 76 leads "Por contactar" en SIAV</div>
+            <span class="action-priority p1">P1 URGENTE</span>
+        </div>
+        <div class="action-meta">
+            <span>👤 <strong>Responsable:</strong> Equipo de Ignacio (Gladys / Gaby / Gabriel)</span>
+            <span>📅 <strong>Deadline:</strong> 16 marzo 2026</span>
+            <span>⏱ <strong>Esfuerzo:</strong> 3-4 horas</span>
+            <span>📈 <strong>Impacto:</strong> Estos leads ya están calificados. Cada día baja un ~10% la tasa de conversión.</span>
+        </div>
+        <ol class="action-steps">
+            <li>Asignar equitativamente entre los 3 setters (Gladys, Gaby, Gabriel)</li>
+            <li>Contactar vía WhatsApp primero, luego llamada si no responde</li>
+            <li>Mover a etapa correspondiente en GHL</li>
+        </ol>
+    </div>
+
+    <!-- P1: Corregir BSL -->
+    <div class="action-card p1">
+        <div class="action-header">
+            <div class="action-title">🛑 Corregir la promesa del BSL: de "65%" a "25-45%"</div>
+            <span class="action-priority p1">P1 URGENTE</span>
+        </div>
+        <div class="action-meta">
+            <span>👤 <strong>Responsable:</strong> LuchoBranding</span>
+            <span>📅 <strong>Deadline:</strong> 13 marzo 2026</span>
+            <span>⏱ <strong>Esfuerzo:</strong> 30 min</span>
+            <span>📈 <strong>Impacto:</strong> Eliminar riesgo regulatorio para campañas USA. La SEC penaliza promesas de rendimiento no respaldadas.</span>
+        </div>
+        <ol class="action-steps">
+            <li>Cambiar headline BSL de "rendimientos superiores al 65%" a "rendimientos de 25% a 45% garantizados"</li>
+            <li>Agregar disclaimer financiero si se va a publicar en USA</li>
+            <li>Verificar consistencia entre BSL, ads copy y oferta documentada</li>
+        </ol>
+    </div>
+
+    <!-- P2: Reactivar leads fríos -->
+    <div class="action-card p2">
+        <div class="action-header">
+            <div class="action-title">🔄 Reactivar los 852 leads fríos con secuencia automatizada</div>
+            <span class="action-priority p2">P2 ALTO</span>
+        </div>
+        <div class="action-meta">
+            <span>👤 <strong>Responsable:</strong> LuchoBranding (GHL) + Equipo Ignacio</span>
+            <span>📅 <strong>Deadline:</strong> 18 marzo 2026</span>
+            <span>⏱ <strong>Esfuerzo:</strong> 4-6 horas</span>
+            <span>📈 <strong>Impacto:</strong> Reactivar 2-5% = 17-42 leads calientes SIN gastar en ads. A ticket $2,500 = $42K-$105K potencial.</span>
+        </div>
+        <ol class="action-steps">
+            <li>Exportar CSV de los 852 leads fríos de GHL (Sin respuesta + Se contactó y no atendió)</li>
+            <li>Crear Custom Audience en Meta Ads con ese CSV</li>
+            <li>Lanzar workflow GHL de re-engagement: Email + WhatsApp + SMS secuencial (3 días)</li>
+            <li>Copy framework PAS: recordarles por qué se registraron, qué están perdiendo, CTA a agendar</li>
+            <li>En paralelo, correr retargeting ad de bajo presupuesto ($10/día) a esta audiencia</li>
+        </ol>
+    </div>
+
+    <!-- P2: Configurar campaña Meta -->
+    <div class="action-card p2">
+        <div class="action-header">
+            <div class="action-title">🚀 Configurar campaña Meta Ads USA (Advantage+)</div>
+            <span class="action-priority p2">P2 ALTO</span>
+        </div>
+        <div class="action-meta">
+            <span>👤 <strong>Responsable:</strong> LuchoBranding</span>
+            <span>📅 <strong>Deadline:</strong> 21 marzo 2026 (después de obtener acceso)</span>
+            <span>⏱ <strong>Esfuerzo:</strong> 8-10 horas (creativos + setup)</span>
+            <span>📈 <strong>Impacto:</strong> ~100 leads USA/mes → 5-6 cierres → $12,500-$18,000 revenue</span>
+        </div>
+        <ol class="action-steps">
+            <li>Crear 3-5 creativos (Video UGC, Estático texto, Carrusel testimonios)</li>
+            <li>Configurar Advantage+ Sales CBO con $40/día, segmentación amplia USA 30-65</li>
+            <li>Subir Audience Hint con lista de 55 clientes actuales</li>
+            <li>Instalar Meta Pixel correctamente en BSL para tracking de Complete Registration</li>
+            <li>Lanzar y monitorear diariamente los primeros 3 días de aprendizaje</li>
+        </ol>
+    </div>
+
+    <!-- P3: Contenido orgánico -->
+    <div class="action-card p3">
+        <div class="action-header">
+            <div class="action-title">📱 Reactivar contenido orgánico Instagram (Reels diarios)</div>
+            <span class="action-priority p3">P3 MEDIO</span>
+        </div>
+        <div class="action-meta">
+            <span>👤 <strong>Responsable:</strong> Ignacio + LuchoBranding (guiones)</span>
+            <span>📅 <strong>Deadline:</strong> Continuo desde semana del 17 marzo</span>
+            <span>⏱ <strong>Esfuerzo:</strong> 1 Reel diario (30 min/día)</span>
+            <span>📈 <strong>Impacto:</strong> Reels 15-30s tienen CPC 45% más barato. Aumentar views de 500 a 2,000+ orgánicamente potencia el retargeting.</span>
+        </div>
+        <ol class="action-steps">
+            <li>Priorizar Reels de 15-30 segundos y Stories diarias</li>
+            <li>Hooks financieros de alto impacto (ya definidos en Plan Maestro)</li>
+            <li>Usar testimonios en video como contenido principal</li>
+            <li>Mínimo 1 video diario durante 30 días</li>
+        </ol>
+    </div>
+</div>
+
+<!-- 08 ROADMAP DE EJECUCIÓN -->
+<div class="section">
+    <h2><span class="section-number">08</span>Roadmap de Ejecución</h2>
+    <table>
+        <thead><tr><th>Semana</th><th>Acción</th><th>Responsable</th><th>KPI Esperado</th></tr></thead>
+        <tbody>
+            <tr style="border-left:3px solid var(--red)"><td><strong>Sem 1<br>(11-16 mar)</strong></td><td>✅ Obtener acceso Meta Ads<br>✅ Contactar 76 leads SIAV "Por contactar"<br>✅ Corregir BSL (65% → 25-45%)</td><td>Ignacio + Lucho + Equipo</td><td>Acceso activo + 76 leads contactados + BSL corregido</td></tr>
+            <tr style="border-left:3px solid var(--orange)"><td><strong>Sem 2<br>(17-23 mar)</strong></td><td>🔄 Lanzar secuencia re-engagement 852 leads fríos<br>🚀 Configurar campaña Meta Ads USA<br>📱 Iniciar contenido diario</td><td>Lucho + Ignacio</td><td>17-42 leads reactivados + campaña live + 1 reel/día</td></tr>
+            <tr style="border-left:3px solid var(--brand-accent)"><td><strong>Sem 3<br>(24-30 mar)</strong></td><td>📊 Primer review de campaña (7 días)<br>🔧 Optimizar creativos (pausar losers)<br>📞 Seguimiento cierres de leads reactivados</td><td>Lucho + Equipo cierre</td><td>CPL real USA medido + 2-3 cierres de reactivados</td></tr>
+            <tr style="border-left:3px solid var(--green)"><td><strong>Sem 4<br>(31 mar - 6 abr)</strong></td><td>📈 Sales Velocity Report #2 (con datos Meta Ads reales)<br>💰 Medir ROAS real<br>🎯 Decidir escalar o pivotar</td><td>Lucho</td><td>ROAS > 3x = escalar. ROAS < 2x = pivotar a LATAM.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- FOOTER -->
+<div class="report-footer">
+    <div class="logo">Sales <span>Velocity</span> × FIN LAB Consulting</div>
+    <div>Report #1 — BASELINE — {report_date}</div>
+    <div style="margin-top:8px">Generado por Antigravity | Sales Velocity System</div>
+</div>
+
+</div>
+
+<!-- JSON DATA BLOCK FOR FUTURE PARSING -->
+<script type="application/json" id="review-data">
+{
+  "client": "Ignacio Sánchez",
+  "brand": "FIN LAB Consulting",
+  "report_date": "2026-03-11",
+  "report_number": 1,
+  "type": "BASELINE",
+  "meta_ads": {
+    "status": "NO_ACCESS",
+    "accounts": [
+      {
+        "id": "act_512423184684678",
+        "name": "Aceleradora Fin Emp",
+        "access": false
+      },
+      {
+        "id": "act_1121013052450336",
+        "name": "Finl Lab VZLA",
+        "access": false
+      }
+    ],
+    "historical": {
+      "cpl_latam": 0.3,
+      "cpl_usa": 12.0,
+      "monthly_budget_ig": 600,
+      "monthly_budget_fb": 1000,
+      "benchmark_cpl_usa_finance": 27.66,
+      "benchmark_ctr_finance": 0.92,
+      "benchmark_cpm_usa": 23.0
+    }
+  },
+  "ghl": {
+    "total_contacts": 8215,
+    "pipelines": {
+      "agendas_siav": {
+        "total": 2665,
+        "stages": {
+          "Por contactar": 8,
+          "Asignados a Gladys": 5,
+          "Asignados a Gaby": 19,
+          "Asignados Gabriel": 24,
+          "Sin respuesta (lead frío)": 622,
+          "Se contactó y no atendió": 230,
+          "En seguimiento (1-5 días)": 793,
+          "En seguimiento (5-10 días)": 184,
+          "En seguimiento (10-15 días)": 150,
+          "En seguimiento (15 días-1 mes)": 497,
+          "En seguimiento >1 mes": 11,
+          "Nunca Respondió": 3,
+          "En Triaje": 4,
+          "No cualificados": 70,
+          "Repesca": 17,
+          "Agendado para Closer - 2ª llamada": 8,
+          "Agendado para Closer": 18,
+          "Lost": 2
+        }
+      },
+      "siav": {
+        "total": 234,
+        "stages": {
+          "Venezuela SIAV": 17,
+          "USA SIAV": 5,
+          "LATAM SIAV": 0,
+          "Por contactar": 76,
+          "Referidos": 1,
+          "España SIAV": 0,
+          "Base": 1
+        }
+      },
+      "stav": {
+        "total": 0,
+        "stages": {}
+      }
+    }
+  },
+  "bsl": {
+    "url": "https://go.finlabconsulting.com/inversion",
+    "title": "Haz Crecer tu Capital | FinLab Consulting",
+    "promise": "rendimientos superiores al 65% anual",
+    "cta": "Agenda tu Sesión Estratégica sin Costo",
+    "calendar": "US Fin Lab Consulting Sesión de Asesoría — 30 Min"
+  },
+  "offer": {
+    "ticket_avg": "2000-3000",
+    "guarantee": "25-45% anual garantizado por contrato",
+    "monthly_revenue": 15000,
+    "active_clients": 55
+  },
+  "instagram": {
+    "followers": 53000,
+    "avg_views": "500-600",
+    "engagement_rate": "~1.1%"
+  }
+}
+</script>
+
+</body>
+</html>
